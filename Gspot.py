@@ -74,4 +74,4 @@ def gcode_to_obj(gcode_file, obj_file, layer_height=0.2):
     write_obj(vertices, faces, obj_file)
 
 # Example usage
-gcode_to_obj("C:\\Users\\19372\\source\\repos\\Gspot\\Gspot\\Rattlesnake_v2.4_thicker_tail_plate_1_gcode.gcode", 'output.obj')
+gcode_to_obj('input.gcode', 'output.obj')
