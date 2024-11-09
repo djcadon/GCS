@@ -56,16 +56,19 @@ def create_faces(vertices, edges, layer_height):
     for z_layer in layers:
         layer_vertices = layers[z_layer]
         for i in range(len(layer_vertices) - 1):
-            faces.append((layer_vertices[i], layer_vertices[i+1], layer_vertices[(i+2)%len(layer_vertices)]))
+            # Create faces between consecutive vertices
+            face = (layer_vertices[i], layer_vertices[i + 1], layer_vertices[(i + 1) % len(layer_vertices)])
+            faces.append(face)
     
     return faces
 
 def write_obj(vertices, faces, obj_file):
     with open(obj_file, 'w') as file:
         for vertex in vertices:
-            file.write(f"v {vertex[0]} {vertex[1]} {vertex[2]}\n")
+            # Swap Y and Z to account for the 90-degree rotation
+            file.write(f"v {vertex[0]} {vertex[2]} {vertex[1]}\n")
         for face in faces:
-            file.write(f"f {face[0]+1} {face[1]+1} {face[2]+1}\n")  # OBJ faces are 1-indexed
+            file.write(f"f {face[0] + 1} {face[1] + 1} {face[2] + 1}\n")  # OBJ faces are 1-indexed
 
 def gcode_to_obj(gcode_file, obj_file, layer_height=0.2):
     movements = parse_gcode(gcode_file)
