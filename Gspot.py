@@ -32,9 +32,12 @@ def parse_gcode(gcode_file):
                 if e:
                     extrusion = float(e.group(1))
                 
-                movements.append((new_pos, extrusion))  # Store position and extrusion
-                previous_pos = new_pos
+                # Only add movements where extrusion occurs or valid positional change
+                if extrusion > 0 or (x or y or z):  # Movements with extrusion or any valid position change
+                    movements.append((new_pos, extrusion))  # Store position and extrusion
                 
+                previous_pos = new_pos
+
         print(f"Parsed {line_count} lines, {len(movements)} movements found.")
     return movements
 
@@ -70,18 +73,13 @@ def save_animation_frames(movements, temp_dir):
         y_vals = [p[1] for p in points]
         z_vals = [p[2] for p in points]
 
-        ax.scatter(x_vals, y_vals, z_vals, color='r', marker='o')
+        # Plot only the lines (no markers)
+        ax.plot(x_vals, y_vals, z_vals, color='r', linestyle='-', linewidth=2)
 
         # Save the frame
         frame_path = os.path.join(temp_dir, f"frame_{frame_count:04d}.png")
         plt.savefig(frame_path)
         frame_paths.append(frame_path)
-
-        # Clear the plot for the next frame
-        ax.cla()
-        ax.set_xlabel("X")
-        ax.set_ylabel("Y")
-        ax.set_zlabel("Z")
 
     plt.close(fig)
     print(f"Saved {len(frame_paths)} frames.")
