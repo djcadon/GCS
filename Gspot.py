@@ -44,6 +44,7 @@ def parse_gcode(gcode_file):
 def save_animation_frames(movements, temp_dir):
     """
     Group points by their Z value and create a frame for each unique Z layer.
+    Each frame follows a gradient color pattern.
     """
     print("Saving animation frames...")
     fig = plt.figure()
@@ -78,6 +79,10 @@ def save_animation_frames(movements, temp_dir):
     frame_paths = []
     frame_count = 0
 
+    # Use a color map to generate a gradient for each frame
+    color_map = plt.cm.viridis  # You can use any colormap you like
+    total_frames = len(layers)
+    
     for z_value, points in sorted(layers.items()):
         frame_count += 1
         print(f"Adding frame {frame_count} for Z={z_value}...")
@@ -86,13 +91,23 @@ def save_animation_frames(movements, temp_dir):
         y_vals = [point[1] for point in points]
         z_vals = [point[2] for point in points]
 
-        # Plot only the lines (no markers)
-        ax.plot(x_vals, y_vals, z_vals, color='r', linestyle='-', linewidth=2)
+        # Map the frame count to a color in the colormap
+        color = color_map(frame_count / total_frames)  # Normalize frame count to [0, 1] range
+        
+        # Plot only the lines (no markers), applying the gradient color
+        ax.plot(x_vals, y_vals, z_vals, color=color, linestyle='-', linewidth=2)
 
         # Save the frame
         frame_path = os.path.join(temp_dir, f"frame_{frame_count:04d}.png")
         plt.savefig(frame_path)
         frame_paths.append(frame_path)
+
+        ax.set_xlabel("X")
+        ax.set_ylabel("Y")
+        ax.set_zlabel("Z")
+        ax.set_xlim([min_val, max_val])
+        ax.set_ylim([min_val, max_val])
+        ax.set_zlim([min_val, max_val])
 
     plt.close(fig)
     print(f"Saved {len(frame_paths)} frames.")
