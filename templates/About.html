@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Geometric Code Slicer</title>
+    <!-- Import Source Code Pro Font -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      /* Apply Source Code Pro font to all text */
+      body {
+        font-family: "Source Code Pro", monospace;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-100 flex items-center justify-center min-h-screen">
+    <!-- Container -->
+    <div
+      class="w-full max-w-2xl mx-auto bg-white p-6 rounded-lg shadow-lg text-center relative"
+    >
+      <!-- Header Section with Logo and About Us Button -->
+      <div class="flex items-center justify-between mb-6">
+        <!-- Logo Button (Top Left) -->
+        <a href="/">
+          <button class="ml-8">
+            <img
+              src="/static/images/Logo.png"
+              class="w-24 h-auto"
+              style="transform: scale(2.5)"
+              alt="Logo"
+            />
+          </button>
+        </a>
+
+        <!-- About Us Button (Top Right) -->
+        <a href="/about">
+          <button
+            class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-md shadow-md"
+          >
+            About Us
+          </button>
+        </a>
+      </div>
+
+      <!-- Information Box -->
+      <div
+        class="border-2 border-gray-300 bg-blue-50 p-6 rounded-lg text-left text-gray-500 mb-6"
+      >
+        <p>&gt; Hello and welcome to GCS (G-Code Slicer)</p>
+        <p>&gt; Given the task from Kinetic Vision we hope</p>
+        <br />
+        <p>&gt; Team Members:</p>
+        <p>&gt; Caden O'leary -&gt; CompSci</p>
+        <p>&gt; Shawn Lasrado -&gt; CompSci</p>
+        <p>&gt; Yiwei Wang -&gt; CybersecE</p>
+        <p>&gt; Ibrahim Konare -&gt; CybersecE</p>
+      </div>
+    </div>
+
+    <script>
+      // Example click handler for the logo button
+      function handleLogoClick() {
+        alert("Logo clicked!");
+      }
+    </script>
+  </body>
+</html>

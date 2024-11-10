@@ -1,23 +1,29 @@
 import re
 import os
 import io
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import imageio.v2 as imageio
 from tempfile import mkdtemp
 
+mpl.use('Agg')
+
 def parse_gcode(gcode_file):
-    movements = [] # Initializing array for movements
+    movements = []  # Initialize array for movements
     with open(gcode_file, 'r') as file:
         previous_pos = [0, 0, 0]  # Initial position (X, Y, Z)
-        #line_count = 0 # Initialized line count
+        
         for line in file:
-            #line_count +=1 # Line count for debug info
-            if line.startswith('G1'): # G1 commands are where print head moves
+            if line.startswith('G1'):  # G1 commands are where print head moves
+                # Initialize extrusion to 0 at the beginning of each line
+                extrusion = 0
+
                 # Regex to capture G1 commands with X, Y, Z, and E
                 x = re.search(r'X(-?\d+\.?\d*)', line)
                 y = re.search(r'Y(-?\d+\.?\d*)', line)
                 z = re.search(r'Z(-?\d+\.?\d*)', line)
                 e = re.search(r'E(-?\d+\.?\d*)', line)
+
                 # Copying array for new movements
                 new_pos = previous_pos.copy()
                 if x:
@@ -30,10 +36,11 @@ def parse_gcode(gcode_file):
                     extrusion = float(e.group(1))
                 # Only add movements where extrusion occurs or valid positional change
                 if extrusion > 0 or (x or y or z):
-                    movements.append((new_pos))  # Store position
-                previous_pos = new_pos # Loop
-                #print(f"Parsed {line_count} lines, {len(movements)} movements found.") debug info
+                    movements.append(new_pos)  # Store position
+                previous_pos = new_pos  # Update previous position
+
     return movements
+
 
 def save_animation_frames(movements, temp_dir):
     fig = plt.figure() # Figure to hold frames for GIF
@@ -67,7 +74,6 @@ def save_animation_frames(movements, temp_dir):
     total_frames = len(layers)  # Count of frames for coloring
     # Looping through layers to create frames
     for z_value, points in sorted(layers.items()):
-        #frame_count += 1 #DEBUG info
         #print(f"Adding frame {frame_count} for Z={z_value}...") #DEBUG info
         x_vals = [point[0] for point in points]
         y_vals = [point[1] for point in points]
@@ -78,6 +84,7 @@ def save_animation_frames(movements, temp_dir):
         ax.plot(x_vals, y_vals, z_vals, color=color, linestyle='-', linewidth=2)
         # Save the frame in temporary directory
         frame_path = os.path.join(temp_dir, f"frame_{frame_count:04d}.png")
+        frame_count += 1 #DEBUG info
         plt.savefig(frame_path) # Save the current frame
         frame_paths.append(frame_path) # Add frame to array of frames
         # Setting labels for loops
@@ -88,7 +95,7 @@ def save_animation_frames(movements, temp_dir):
         ax.set_ylim([min_val, max_val])
         ax.set_zlim([min_val, max_val])
     plt.close(fig) # Close figure for freeing up space
-    #print(f"Saved {len(frame_paths)} frames.") #DEBUG info
+    print(f"Saved {len(frame_paths)} frames.") #DEBUG info
     return frame_paths
 
 def write_obj(vertices, faces, edges, obj_file):
@@ -166,9 +173,14 @@ def create_obj(gcode_file):
 
 def create_gif(gcode_file):
     movements = parse_gcode(gcode_file) # Get movments for making frames
+    print("Done Gcode")
     temp_dir = mkdtemp()  # Temporary directory for saving frames
+    print(temp_dir)
     gif_buffer = io.BytesIO() # Byte buffer for returning GIF file
-    frames = save_animation_frames(movements, temp_dir) # Creating frames for every group of Z values
-    imageio.mimsave(gif_buffer, frames, format='GIF', duration=0.5) # Creating Gif
+    frame_paths = save_animation_frames(movements, temp_dir) # Creating frames for every group of Z values
+    frame_images = []
+    for filename in frame_paths:
+        frame_images.append(imageio.imread(filename))
+    imageio.mimsave(gif_buffer, frame_images, format='GIF', duration=0.5) # Creating Gif
     gif_buffer.seek(0)     # Reset buffer position to the start for return
     return gif_buffer
