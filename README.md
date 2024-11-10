@@ -1,6 +1,12 @@
 Geometric Code Slicer
 Geometric Code Slicer is a web-based tool for converting G-code files into 3D models and animations, making it easier for users to visualize and analyze geometric code (G-code) from various 3D printing and CNC applications. This project was developed for [Hackathon Name], focused on creating innovative solutions for file processing and visualization.
 
+Contributors:
+Caden O'Leary
+Ibrahim Konare
+Yiwei Wang
+Shawn Lasrado
+
 🚀 Features
 G-Code Upload: Simple drag-and-drop upload for G-code files.
 G-Code Slicing: Converts G-code into .obj (3D model) and .gif (animated preview).
