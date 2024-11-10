@@ -33,7 +33,7 @@ def parse_gcode(gcode_file):
                     extrusion = float(e.group(1))
                 
                 # Only add movements where extrusion occurs or valid positional change
-                if extrusion > 0 or (x or y or z):  # Movements with extrusion or any valid position change
+                if extrusion > 0 or (x or y or z):  # THIS FIXES EVERYTHING
                     movements.append((new_pos, extrusion))  # Store position and extrusion
                 
                 previous_pos = new_pos
@@ -61,17 +61,30 @@ def save_animation_frames(movements, temp_dir):
             layers[z_value] = []
         layers[z_value].append(position)
 
+    # Collect all coordinates for setting the axis limits
+    all_x = [position[0] for position, extrusion in movements]
+    all_y = [position[1] for position, extrusion in movements]
+    all_z = [position[2] for position, extrusion in movements]
+
+    # Set axis limits based on the min and max values of the coordinates
+    min_val = min(min(all_x), min(all_y), min(all_z))
+    max_val = max(max(all_x), max(all_y), max(all_z))
+
+    ax.set_xlim([min_val, max_val])
+    ax.set_ylim([min_val, max_val])
+    ax.set_zlim([min_val, max_val])
+
+    # Create a frame for each Z layer
     frame_paths = []
     frame_count = 0
 
-    # Create a frame for each Z layer
     for z_value, points in sorted(layers.items()):
         frame_count += 1
         print(f"Adding frame {frame_count} for Z={z_value}...")
 
-        x_vals = [p[0] for p in points]
-        y_vals = [p[1] for p in points]
-        z_vals = [p[2] for p in points]
+        x_vals = [point[0] for point in points]
+        y_vals = [point[1] for point in points]
+        z_vals = [point[2] for point in points]
 
         # Plot only the lines (no markers)
         ax.plot(x_vals, y_vals, z_vals, color='r', linestyle='-', linewidth=2)
