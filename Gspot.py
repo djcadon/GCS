@@ -34,10 +34,8 @@ def parse_gcode(gcode_file):
                 
                 # Only add movements where extrusion occurs or valid positional change
                 if extrusion > 0 or (x or y or z):  # THIS FIXES EVERYTHING
-                    movements.append((new_pos, extrusion))  # Store position and extrusion
-                
+                    movements.append((new_pos))  # Store position
                 previous_pos = new_pos
-
         print(f"Parsed {line_count} lines, {len(movements)} movements found.")
     return movements
 
@@ -54,18 +52,19 @@ def save_animation_frames(movements, temp_dir):
     ax.set_ylabel("Y")
     ax.set_zlabel("Z")
 
-    # Group points by their Z value
+    # Group points by their Z value with tolerance
+    tolerance = 0.01  # Allow small differences to still be grouped
     layers = {}
-    for position, extrusion in movements:
-        z_value = round(position[2], 2)  # Round Z to 2 decimal places for grouping
+    for position in movements:
+        z_value = round(position[2] / tolerance) * tolerance  # Group by tolerance
         if z_value not in layers:
             layers[z_value] = []
         layers[z_value].append(position)
 
     # Collect all coordinates for setting the axis limits
-    all_x = [position[0] for position, extrusion in movements]
-    all_y = [position[1] for position, extrusion in movements]
-    all_z = [position[2] for position, extrusion in movements]
+    all_x = [position[0] for position in movements]
+    all_y = [position[1] for position in movements]
+    all_z = [position[2] for position in movements]
 
     # Set axis limits based on the min and max values of the coordinates
     min_val = min(min(all_x), min(all_y), min(all_z))
@@ -119,17 +118,27 @@ def create_gif_from_frames(frame_paths, gif_file, duration=0.5):
     imageio.mimsave(gif_file, frames, format='GIF', duration=duration)
     print(f"GIF saved to {gif_file}.")
 
-def write_obj(vertices, faces, obj_file):
+def write_obj(vertices, faces, edges, obj_file):
     """
-    Write the mesh (vertices, faces) to an .obj file.
+    Write the mesh (vertices, faces) and edges (lines) to an .obj file.
     """
     print(f"Writing .obj file: {obj_file}...")
+    
     with open(obj_file, 'w') as file:
+        # Write the vertices (v)
         for vertex in vertices:
             # Swap Y and Z to account for the 90-degree rotation
             file.write(f"v {vertex[0]} {vertex[2]} {vertex[1]}\n")
+        
+        # Write the faces (f)
         for face in faces:
             file.write(f"f {face[0] + 1} {face[1] + 1} {face[2] + 1}\n")  # OBJ faces are 1-indexed
+        
+        # Write the edges (l)
+        for edge in edges:
+            # OBJ lines are 1-indexed, so add 1 to each index
+            file.write(f"l {edge[0] + 1} {edge[1] + 1}\n")
+    
     print(f"OBJ file saved to {obj_file}.")
 
 def generate_mesh(movements):
@@ -137,13 +146,28 @@ def generate_mesh(movements):
     edges = []
     
     # Create vertices based on positions
-    for i, (position, extrusion) in enumerate(movements):
+    for i, (position) in enumerate(movements):
         vertices.append(position)
         if i > 0:
             # Create an edge between consecutive positions
             edges.append((i - 1, i))
     
     return vertices, edges
+
+def add_random_offset_to_z(points, offset_scale=0.001):
+    """
+    Adds a small random offset only to the Z-coordinate of points that are coplanar.
+    """
+    points = np.array(points)
+    
+    # Check if points are coplanar (i.e., have nearly identical Z-values)
+    z_values = points[:, 2]
+    if np.max(z_values) - np.min(z_values) < 0.001:  # If Z-values are very close
+        # Add small random offsets only to the Z-coordinate
+        random_offsets = np.random.uniform(-offset_scale, offset_scale, len(points))
+        points[:, 2] += random_offsets
+        
+    return points
 
 def create_faces(vertices, edges, layer_height):
     faces = []
@@ -160,10 +184,9 @@ def create_faces(vertices, edges, layer_height):
     for z_layer in layers:
         layer_vertices = layers[z_layer]
         for i in range(len(layer_vertices) - 1):
-            # Create faces between consecutive vertices
-            face = (layer_vertices[i], layer_vertices[i + 1], layer_vertices[(i + 1) % len(layer_vertices)])
-            faces.append(face)
-    
+                # Create faces between consecutive vertices
+                face = (layer_vertices[i], layer_vertices[i + 1], layer_vertices[(i + 1) % len(layer_vertices)])
+                faces.append(face)
     return faces
 
 def gcode_to_obj_with_animation(gcode_file, obj_file, gif_file, layer_height=0.2):
@@ -177,17 +200,20 @@ def gcode_to_obj_with_animation(gcode_file, obj_file, gif_file, layer_height=0.2
     faces = create_faces(vertices, edges, layer_height)
 
     # Write the object file
-    write_obj(vertices, faces, obj_file)
+    write_obj(vertices, faces, edges, obj_file)
 
     # Temporary directory for saving frames
     temp_dir = mkdtemp()
     try:
         frame_paths = save_animation_frames(movements, temp_dir)
         create_gif_from_frames(frame_paths, gif_file)
+    except Exception as e:
+        print(f"Error occurred: {e}")
     finally:
-        shutil.rmtree(temp_dir)  # Clean up temporary files
+        shutil.rmtree(temp_dir, ignore_errors=True)  # Ensure temp directory is cleaned
 
     print(f"GIF animation saved as {gif_file}")
 
 # Example usage
-gcode_to_obj_with_animation('input.gcode', 'output.obj', 'animation.gif')
+gcode_to_obj_with_animation("C:\\Users\\19372\\Downloads\\KV_Monogram.gcode", 'output.obj', 'animation.gif')
+#gcode_to_obj_with_animation("input.gcode", 'output.obj', 'animation.gif')
