@@ -1,5 +1,3 @@
 Flask
 matplotlib
 imageio
-numpy
-scipy
