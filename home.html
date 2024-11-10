@@ -4,7 +4,47 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Geometric Code Slicer</title>
+    <!-- Import Source Code Pro Font -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      /* Apply Source Code Pro font to all text */
+      body {
+        font-family: "Source Code Pro", monospace;
+      }
+      /* Loading bar styling */
+      .loading-bar {
+        width: 80%;
+        height: 8px;
+        background-color: #e0e0e0;
+        border-radius: 4px;
+        overflow: hidden;
+        position: relative;
+      }
+      .loading-bar::before {
+        content: "";
+        position: absolute;
+        width: 50%;
+        height: 100%;
+        background-color: #3498db;
+        animation: loading 1.5s infinite;
+        border-radius: 4px;
+      }
+      @keyframes loading {
+        0% {
+          left: -50%;
+        }
+        50% {
+          left: 100%;
+        }
+        100% {
+          left: -50%;
+        }
+      }
+    </style>
   </head>
   <body class="bg-gray-100 flex items-center justify-center min-h-screen">
     <!-- Container -->
@@ -14,47 +54,47 @@
       <!-- Header Section with Logo and About Us Button -->
       <div class="flex items-center justify-between mb-6">
         <!-- Logo Button (Top Left) -->
-      <a href = "home.html">
-        <button class="ml-8">
-          <img
-            src="Logo.png"
-            class="w-24 h-auto"
-            style="transform: scale(2.5)"
-            alt="Logo"
-          />
-        </button>
-      </a>
+        <a href="home.html">
+          <button class="ml-8">
+            <img
+              src="Logo.png"
+              class="w-24 h-auto"
+              style="transform: scale(2.5)"
+              alt="Logo"
+            />
+          </button>
+        </a>
 
         <!-- About Us Button (Top Right) -->
-
-        <a href = "about.html">
+        <a href="about.html">
           <button
             class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-md shadow-md"
           >
             About Us
           </button>
-        </div></a>
+        </a>
+      </div>
 
       <!-- Upload Box -->
       <div
+        id="uploadBox"
         class="border-2 border-dashed border-gray-400 bg-blue-50 p-8 rounded-lg flex gap-4 mb-12 flex-col items-center cursor-pointer"
         onclick="document.getElementById('fileInput').click()"
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="h-12 w-12 text-gray-400 mb-2"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M12 4v16m8-8H4"
-          />
-        </svg>
-        <p class="text-gray-500">Upload Geometric Code Here</p>
+        <!-- Downsign Image and Loading Bar -->
+        <img
+          id="downsignIcon"
+          src="downsign.png"
+          class="h-12 w-12 mb-2"
+          alt="Downsign"
+        />
+
+        <!-- Loading Bar (Hidden Initially) -->
+        <div id="loadingBar" class="loading-bar hidden"></div>
+
+        <!-- Text with Source Code Pro Font -->
+        <p id="uploadText" class="text-gray-500">Upload Geometric Code Here</p>
+
         <!-- Hidden File Input for Uploading -->
         <input
           type="file"
@@ -66,6 +106,7 @@
 
       <!-- Slice Button -->
       <button
+        onclick="sliceGCode()"
         class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-md shadow-md mb-4"
       >
         Slice G-Code
@@ -73,14 +114,52 @@
     </div>
 
     <script>
+      let uploadedFile = null;
+
       function handleFileUpload(event) {
-        const file = event.target.files[0];
-        if (file) {
-          alert(`File "${file.name}" selected successfully!`);
-          // Add further processing code here as needed
+        uploadedFile = event.target.files[0];
+        const uploadText = document.getElementById("uploadText");
+
+        if (uploadedFile) {
+          uploadText.textContent = `File Uploaded: ${uploadedFile.name}`;
         } else {
-          alert("No file selected.");
+          uploadText.textContent = "No file selected.";
         }
+      }
+
+      function sliceGCode() {
+        if (!uploadedFile) {
+          alert("Please upload a file first.");
+          return;
+        }
+
+        // Show the loading bar and hide the downsign icon
+        document.getElementById("downsignIcon").classList.add("hidden");
+        document.getElementById("loadingBar").classList.remove("hidden");
+
+        // Create a FormData object to send the file
+        const formData = new FormData();
+        formData.append("file", uploadedFile);
+
+        // Send file to the backend
+        fetch("http://localhost:5000/upload", {
+          method: "POST",
+          body: formData,
+        })
+          .then((response) => {
+            if (response.ok) {
+              // Redirect to slice.html after file upload starts processing
+              window.location.href = "slice.html";
+            } else {
+              throw new Error("File upload failed");
+            }
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+            alert("Failed to start slice process. Please upload a new file.");
+            // Reload the page if there's an error
+            location.reload();
+          });
       }
     </script>
   </body>

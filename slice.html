@@ -4,6 +4,11 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Geometric Code Slicer</title>
+    <!-- Import Source Code Pro Font -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
     <script src="https://cdn.tailwindcss.com"></script>
   </head>
   <body class="bg-gray-100 flex items-center justify-center min-h-screen">
@@ -14,46 +19,58 @@
       <!-- Header Section with Logo and About Us Button -->
       <div class="flex items-center justify-between mb-6">
         <!-- Logo Button (Top Left) -->
-      <a href = "home.html">
-        <button class="ml-8">
-          <img
-            src="Logo.png"
-            class="w-24 h-auto"
-            style="transform: scale(2.5)"
-            alt="Logo"
-          />
-        </button>
-      </a>
+        <a href="home.html">
+          <button class="ml-8">
+            <img
+              src="Logo.png"
+              class="w-24 h-auto"
+              style="transform: scale(2.5)"
+              alt="Logo"
+            />
+          </button>
+        </a>
 
-        <!-- About Us Button (Top Right) -->
-
-        <a href = "about.html">
+        <!-- About Us Button (Top Right) with Source Code Pro font -->
+        <a href="about.html">
           <button
             class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-md shadow-md"
+            style="font-family: 'Source Code Pro', monospace"
           >
             About Us
           </button>
-        </div></a>
+        </a>
+      </div>
 
-      <!-- Output Boxes Section with Increased Size -->
+      <!-- Output Boxes Section with Increased Size and Source Code Pro font -->
       <div class="flex gap-4 mb-10">
         <!-- Left Output Box -->
         <div
           class="flex-1 border-2 border-dashed border-gray-400 bg-blue-50 p-10 rounded-lg min-h-[200px]"
         >
-          <p class="text-gray-500">Output Box 1</p>
+          <p
+            class="text-gray-500"
+            style="font-family: 'Source Code Pro', monospace"
+          >
+            Output Box 1
+          </p>
         </div>
         <!-- Right Output Box -->
         <div
           class="flex-1 border-2 border-dashed border-gray-400 bg-blue-50 p-10 rounded-lg min-h-[200px]"
         >
-          <p class="text-gray-500">Output Box 2</p>
+          <p
+            class="text-gray-500"
+            style="font-family: 'Source Code Pro', monospace"
+          >
+            Output Box 2
+          </p>
         </div>
       </div>
 
-      <!-- Slice Button -->
+      <!-- Slice Button with Source Code Pro font -->
       <button
         class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-md shadow-md mb-4"
+        style="font-family: 'Source Code Pro', monospace"
       >
         Slice G-Code
       </button>
