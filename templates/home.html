@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Geometric Code Slicer</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+            body {
+              font-family: "Source Code Pro", monospace;
+            }
+            .loading-bar {
+              width: 80%;
+              height: 8px;
+              background-color: #e0e0e0;
+              border-radius: 4px;
+              overflow: hidden;
+              position: relative;
+            }
+            .loading-bar::before {
+              content: "";
+              position: absolute;
+              width: 50%;
+              height: 100%;
+              background-color: #3498db;
+              animation: loading 1.5s infinite;
+              border-radius: 4px;
+            }
+            @keyframes loading {
+              0% {
+                left: -50%;
+              }
+              100% {
+                left: 100%;
+              }
+            }
+            
+    </style>
+  </head>
+  <body class="bg-gray-100 flex items-center justify-center min-h-screen">
+    <div
+      class="w-full max-w-2xl mx-auto bg-white p-6 rounded-lg shadow-lg text-center relative"
+    >
+      <div class="flex items-center justify-between mb-6">
+        <a href="/">
+          <button class="ml-8">
+            <img
+              src="/static/images/Logo.png"
+              class="w-24 h-auto"
+              style="transform: scale(2.5)"
+              alt="Logo"
+            />
+          </button>
+        </a>
+        <a href="/about">
+          <button
+            class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-md shadow-md"
+          >
+            About Us
+          </button>
+        </a>
+      </div>
+
+      <div
+        id="uploadBox"
+        class="border-2 border-dashed border-gray-400 bg-blue-50 p-8 rounded-lg flex gap-4 mb-12 flex-col items-center cursor-pointer"
+        onclick="document.getElementById('fileInput').click()"
+      >
+        <img
+          id="downsignIcon"
+          src="/static/images/downsign.png"
+          class="h-12 w-12 mb-2"
+          alt="Downsign"
+        />
+        <div id="loadingBar" class="loading-bar hidden"></div>
+        <p id="uploadText" class="text-gray-500">Upload Geometric Code Here</p>
+        <input
+          type="file"
+          id="fileInput"
+          class="hidden"
+          onchange="handleFileUpload(event)"
+        />
+      </div>
+
+      <button
+        onclick="sliceGCode()"
+        class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-md shadow-md mb-4"
+      >
+        Slice G-Code
+      </button>
+
+      <div id="downloadLinks" class="mt-4 hidden">
+        <p>Download your processed files:</p>
+        <a
+          id="downloadObj"
+          class="text-blue-500 underline block mt-2"
+          download="model.obj"
+          >Download 3D Model (.obj)</a
+        >
+        <a
+          id="downloadGif"
+          class="text-blue-500 underline block mt-2"
+          download="model_animation.gif"
+          >Download Animation (.gif)</a
+        >
+      </div>
+    </div>
+
+    <script>
+      let uploadedFile = null;
+
+      function handleFileUpload(event) {
+        uploadedFile = event.target.files[0];
+        const uploadText = document.getElementById("uploadText");
+
+        if (uploadedFile) {
+          uploadText.textContent = `File Uploaded: ${uploadedFile.name}`;
+        } else {
+          uploadText.textContent = "No file selected.";
+        }
+      }
+
+      function sliceGCode() {
+        if (!uploadedFile) {
+          alert("Please upload a file first.");
+          return;
+        }
+
+        document.getElementById("downsignIcon").classList.add("hidden");
+        document.getElementById("loadingBar").classList.remove("hidden");
+
+        const formData = new FormData();
+        formData.append("file", uploadedFile);
+
+        fetch("/upload", {
+          method: "POST",
+          body: formData,
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.obj && data.gif) {
+              localStorage.setItem("objUrl", data.obj);
+              localStorage.setItem("gifUrl", data.gif);
+              window.location.href = "result";
+            } else {
+              throw new Error("File processing failed");
+            }
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+            alert("Failed to process the file. Please try again.");
+          });
+      }
+    </script>
+  </body>
+</html>
