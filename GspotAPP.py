@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, send_from_directory
 import os
 import re
 from werkzeug.utils import secure_filename
-import Gspot
+import GSlice
 
 app = Flask(__name__)
 
@@ -19,7 +19,7 @@ def allowed_file(filename):
 # Route for the main page
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('home.html')
 
 # Route to handle file upload and conversion
 @app.route('/upload', methods=['POST'])
@@ -34,8 +34,8 @@ def upload_file():
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(filepath)
 
-        # Process the G-code file and generate OBJ and GIF (use your existing functions here)
-        obj_file, gif_file = gcode_to_obj_with_animation(filepath)
+        obj_file = create_obj_file(filepath)
+        gif_file = create_gif_file(filepath)
 
         # Send the generated files to the user
         return render_template('download.html', obj_file=obj_file, gif_file=gif_file)

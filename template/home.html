@@ -111,6 +111,23 @@
       >
         Slice G-Code
       </button>
+
+      <!-- Download Links Container -->
+      <div id="downloadLinks" class="mt-4 hidden">
+        <p>Download your processed files:</p>
+        <a
+          id="downloadObj"
+          class="text-blue-500 underline block mt-2"
+          download="model.obj"
+          >Download 3D Model (.obj)</a
+        >
+        <a
+          id="downloadGif"
+          class="text-blue-500 underline block mt-2"
+          download="model_animation.gif"
+          >Download Animation (.gif)</a
+        >
+      </div>
     </div>
 
     <script>
@@ -146,17 +163,32 @@
           method: "POST",
           body: formData,
         })
-          .then((response) => {
-            if (response.ok) {
-              // Redirect to slice.html after file upload starts processing
-              window.location.href = "slice.html";
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.obj && data.gif) {
+              // Create Blob URLs for .obj and .gif files
+              const objBlob = new Blob([data.obj], {
+                type: "application/octet-stream",
+              });
+              const gifBlob = new Blob([data.gif], { type: "image/gif" });
+              const objUrl = URL.createObjectURL(objBlob);
+              const gifUrl = URL.createObjectURL(gifBlob);
+
+              // Display download links and assign Blob URLs to links
+              const downloadLinks = document.getElementById("downloadLinks");
+              document.getElementById("downloadObj").href = objUrl;
+              document.getElementById("downloadGif").href = gifUrl;
+              downloadLinks.classList.remove("hidden");
+
+              // Hide loading bar
+              document.getElementById("loadingBar").classList.add("hidden");
             } else {
-              throw new Error("File upload failed");
+              throw new Error("File processing failed");
             }
           })
           .catch((error) => {
             console.error("Error:", error);
-            alert("Failed to start slice process. Please upload a new file.");
+            alert("Failed to process the file. Please try again.");
             // Reload the page if there's an error
             location.reload();
           });
